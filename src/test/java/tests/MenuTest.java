@@ -1,5 +1,6 @@
 package tests;
 
+import base.BaseTest;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -8,19 +9,7 @@ import pages.HomePage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //Test checks the links of the menu and pages content
-public class MenuTest {
-    @BeforeAll
-    static void setUp(){
-        //Set default browser
-        Configuration.browser = "chrome";
-
-        //Increase the default timeout for elements waiting (10 seconds)
-        Configuration.timeout = 10000;
-
-        //Maximize the browser window for reliable element visibility
-        Configuration.browserSize = "1920x1080";
-    }
-
+public class MenuTest extends BaseTest {
     //Test: check navigation link Home
     @Test
     void checkNavigationMenuHome(){

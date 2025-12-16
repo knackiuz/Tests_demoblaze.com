@@ -1,24 +1,13 @@
 package tests;
 
+import base.BaseTest;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pages.HomePage;
 
 //Test to shop 3 items from different categories
-public class ShopTest {
-    @BeforeAll
-    static void setUp(){
-        //Set default browser
-        Configuration.browser = "chrome";
-
-        //Increase the default timeout for elements waiting (10 seconds)
-        Configuration.timeout = 10000;
-
-        //Maximize the browser window for reliable element visibility
-        Configuration.browserSize = "1920x1080";
-    }
-
+public class ShopTest extends BaseTest {
     @Test
     void shopThreeItemsFromDifferentCategories(){
         //Laptop name
