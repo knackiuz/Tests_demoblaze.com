@@ -18,16 +18,21 @@ public class HomePage {
     //Navigation menu
     //Selector for link of Home
     private final SelenideElement NAVIGATION_BAR = $("#navbarExample");
-
     //Collection of the links
     private final ElementsCollection MENU_LINKS = NAVIGATION_BAR.$$("li a");
-
     //Navigation link: Home
     //private final SelenideElement homeLink = $("#navbarExample").$$("li a").findBy(text("Home"));
     private final SelenideElement homeLink = MENU_LINKS.findBy(text("Home"));
-
     //Navigation link: Contact
     private final SelenideElement homeContact = MENU_LINKS.findBy(text("Contact"));
+
+    //Menu: CATEGORIES
+    private final SelenideElement categoryLinkByText(String categoryName){
+        return $x("//a[text()='" + categoryName + "']");
+    }
+
+    //List of products displayed in the main content area
+    private final ElementsCollection productCards = $("#tbodyid").$$(".card");
 
     //Open Home Page by URL
     public HomePage openPage(){
@@ -52,5 +57,23 @@ public class HomePage {
     public ContactModal contactClick(){
         homeContact.click();
         return new ContactModal();
+    }
+
+    //CATEGORIES: click on category by provided name
+    public HomePage selectCategory(String categoryName){
+        categoryLinkByText(categoryName).click();
+        return this;
+    }
+
+    //CATEGORIES: check that correct product is displayed
+    public HomePage checkProductCard(String productCardName){
+        productCards.findBy(text(productCardName)).shouldBe(visible).$("a").shouldBe(visible, clickable);
+        return this;
+    }
+
+    //CATEGORIES: click on product link by provided item's name
+    public ProductPage productClick(String productName){
+        productCards.findBy(text(productName)).$("a").click();
+        return new ProductPage();
     }
 }
