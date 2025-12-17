@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pages.HomePage;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 //Test to shop 3 items from different categories
 public class ShopTest extends BaseTest {
     @Test
@@ -14,7 +16,7 @@ public class ShopTest extends BaseTest {
         String laptopName = "Sony vaio i5";
         String monitorName = "Apple monitor 24";
         String phoneName = "Nexus 6";
-        new HomePage().openPage().                                  //Open Home page
+        String actualConfirmMessage = new HomePage().openPage().    //Open Home page
                 verifyPageIsLoaded()                                //The page is loaded
                 .selectCategory("Laptops")              //Select category 'Laptops'
                 .checkProductCard(laptopName)                       //Check that the product is available
@@ -43,7 +45,21 @@ public class ShopTest extends BaseTest {
                 .checkCartItems(3)                                  //Check that all 3 products in the cart
                 .checkProductName(laptopName)                       //Check Laptop product's name
                 .checkProductName(monitorName)                      //Check Monitor product's name
-                .checkProductName(phoneName);                       //Check Phone product's name
+                .checkProductName(phoneName)                        //Check Phone product's name
+                .pushPlaceOrderButton()                             //Click button 'Place Order'
+                .verifyPlaceOrderModalIsLoaded()                    //Place Order modal page is loaded
+                .fillPlaceOrderModal(
+                        "Customer",
+                        "Latvia",
+                        "Riga",
+                        "1234567890",
+                        "01",
+                        "2025")                                //Form filling
+                .purchaseButtonClick();                             //Click button 'Purchase'
+
+        //Verify that the purchase was completed successfully
+        String expectedConfirmMessage = "Thank you for your purchase!";
+        assertEquals(expectedConfirmMessage, actualConfirmMessage, "Confirm message should be: " + expectedConfirmMessage);
 
     }
 }

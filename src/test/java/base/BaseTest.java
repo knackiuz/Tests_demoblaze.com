@@ -15,5 +15,8 @@ public class BaseTest {
 
         //Maximize the browser window for reliable element visibility
         Configuration.browserSize = "1920x1080";
+
+        //Set to true to prevent the browser from closing after execution
+        Configuration.holdBrowserOpen = false;
     }
 }
