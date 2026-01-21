@@ -3,12 +3,14 @@ package tests;
 import base.BaseTest;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import pages.HomePage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //Test checks the links of the menu and pages content
+@Tag("smoke") //Smoke test group tag for parallel running
 public class MenuTest extends BaseTest {
     //Test: check navigation link Home
     @Test

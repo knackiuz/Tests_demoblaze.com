@@ -3,12 +3,14 @@ package tests;
 import base.BaseTest;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import pages.HomePage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //Test to shop 3 items from different categories
+@Tag("regression") //Smoke test group tag for parallel running
 public class ShopTest extends BaseTest {
     @Test
     void shopThreeItemsFromDifferentCategories(){

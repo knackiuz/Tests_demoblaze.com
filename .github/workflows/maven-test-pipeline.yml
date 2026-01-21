@@ -13,8 +13,13 @@ on:
 # Define the jobs
 jobs:
   build:
+    name: Run ${{ matrix.test-group }} tests
     # Run on the standard Ubuntu virtual machine
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # Continue the tests running in case if one of them is failed
+      matrix:
+        test-group: ["smoke", "regression"]
 
     # Steps for execution
     steps:
@@ -31,15 +36,18 @@ jobs:
           # Enable Maven caching for faster dependency downloads
           cache: maven
 
-      - name: Run Maven Tests
+      #- name: Run Maven Tests
         # Execute the tests using the Maven 'test' goal
         # Pass the selenide.headless property to ensure tests run without a GUI
-        run: mvn test -Dselenide.headless=true
+        #run: mvn test -Dselenide.headless=true
+      - name: Run Tests by Group
+        run: mvn test -Dgroups="${{ matrix.test-group }}" -Dselenide.headless=true # Using parameter Dgroups for filter by tags
 
       - name: Final Status Check (Success)
         # This step only runs if the previous 'mvn test' step was successful
         if: success()
-        run: echo "Tests passed successfully! Continuous Integration is good."
+        #run: echo "Tests passed successfully! Continuous Integration is good."
+        run: echo "Group ${{ matrix.test-group }} completed successfully!"
 
       - name: Report Failure
         # This step only runs if the tests failed
