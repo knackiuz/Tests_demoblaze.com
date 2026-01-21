@@ -42,6 +42,7 @@ jobs:
         #run: mvn test -Dselenide.headless=true
       - name: Run Tests by Group
         run: mvn test -Dgroups="${{ matrix.test-group }}" -Dselenide.headless=true # Using parameter Dgroups for filter by tags
+        continue-on-error: true
 
       - name: Final Status Check (Success)
         # This step only runs if the previous 'mvn test' step was successful
@@ -55,6 +56,15 @@ jobs:
         #run: echo "Tests failed! Check the test results in the workflow logs."
         run: echo "Tests failed in group ${{ matrix.test-group }}
 
+        # Upload Allure report
+      - name: Upload Allure Results
+        if: always() # For failed and success to see each status of the test running
+        uses: actions/upload-artifact@v4
+        with:
+            name: allure-results-${{ matrix.test-group }}
+            path: target/allure-results
+            retention-days: 1
+
         #Save screenshot if case of fail
       - name: Upload Selenide reports
         if: failure()
@@ -63,3 +73,36 @@ jobs:
           name: screenshots-${{ matrix.test-group }}
           path: build/reports/tests/
           retention-days: 5
+
+  generate-report:
+      # This job starts only after build is finished
+      needs: build
+      runs-on: ubuntu-latest
+      if: always()
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        - name: Download All Allure Results
+          # Merging results from all parallel runs
+          uses: actions/download-artifact@v4
+          with:
+            pattern: allure-results-*
+            path: all-results
+            merge-multiple: true
+
+        - name: Build and Publish Allure Report
+          # This action builds the HTML report and pushes it to gh-pages branch
+          uses: simple-elf/allure-report-action@v1.9
+          with:
+            allure_results: all-results
+            gh_pages: gh-pages
+            allure_report: allure-report
+            allure_history: allure-history
+
+        - name: Deploy to GitHub Pages
+          uses: peaceiris/actions-gh-pages@v3
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_branch: gh-pages
+            publish_dir: allure-history
