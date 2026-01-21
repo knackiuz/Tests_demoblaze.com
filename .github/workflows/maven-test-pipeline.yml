@@ -2,12 +2,10 @@ name: Java Maven Tests CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master ]
 
 permissions:
-  contents: read
-  pages: write      # Required for direct deployment
-  id-token: write   # Required for security OIDC
+  contents: write
 
 jobs:
   build:
@@ -26,7 +24,7 @@ jobs:
           cache: maven
 
       - name: Run Tests
-        # Added English comments as requested
+        # Adding English comments to code
         run: mvn test -Dgroups="${{ matrix.test-group }}" -Dselenide.headless=true
         continue-on-error: true
 
@@ -37,7 +35,7 @@ jobs:
           name: allure-results-${{ matrix.test-group }}
           path: target/allure-results
 
-  generate-report:
+  generate-and-deploy:
     runs-on: ubuntu-latest
     needs: build
     if: always()
@@ -58,21 +56,12 @@ jobs:
           sudo ln -s $(pwd)/allure-2.32.0/bin/allure /usr/bin/allure
 
       - name: Generate Report
-        run: allure generate all-results -o allure-report --clean
+        run: allure generate all-results -o allure-report-dir --clean
 
-      - name: Upload Pages Artifact
-        # This is the official way to prepare files for deployment
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: allure-report
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: generate-report
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        # Using peaceiris action which is more stable for branch-based deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report-dir
