@@ -52,4 +52,14 @@ jobs:
       - name: Report Failure
         # This step only runs if the tests failed
         if: failure()
-        run: echo "Tests failed! Check the test results in the workflow logs."
+        #run: echo "Tests failed! Check the test results in the workflow logs."
+        run: echo "Tests failed in group ${{ matrix.test-group }}
+
+        #Save screenshot if case of fail
+      - name: Upload Selenide reports
+        if: failed
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.test-group }}
+          path: build/reports/tests/
+          retention-days: 5
