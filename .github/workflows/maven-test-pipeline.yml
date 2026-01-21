@@ -1,88 +1,50 @@
-# The name of your pipeline, which will appear in GitHub Actions
 name: Java Maven Tests CI
 
-# When the pipeline should run
 on:
   push:
-    # Run on commits to the main branch
-    branches: [ master, main ]
-  pull_request:
-    # Run on creation of a Pull Request targeting the main branch
     branches: [ master, main ]
 
-# Define the jobs
+permissions:
+  contents: read
+  pages: write      # Required for direct deployment
+  id-token: write   # Required for security OIDC
+
 jobs:
   build:
     name: Run ${{ matrix.test-group }} tests
-    # Run on the standard Ubuntu virtual machine
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false # Continue the tests running in case if one of them is failed
+      fail-fast: false
       matrix:
         test-group: ["smoke", "regression"]
-
-    # Steps for execution
     steps:
-      - name: Checkout Repository
-        # Action to check out the repository code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        # Action to set up the Java environment
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          # Enable Maven caching for faster dependency downloads
           cache: maven
 
-      #- name: Run Maven Tests
-        # Execute the tests using the Maven 'test' goal
-        # Pass the selenide.headless property to ensure tests run without a GUI
-        #run: mvn test -Dselenide.headless=true
-      - name: Run Tests by Group
-        run: mvn test -Dgroups="${{ matrix.test-group }}" -Dselenide.headless=true # Using parameter Dgroups for filter by tags
+      - name: Run Tests
+        # Added English comments as requested
+        run: mvn test -Dgroups="${{ matrix.test-group }}" -Dselenide.headless=true
         continue-on-error: true
 
-      - name: Final Status Check (Success)
-        # This step only runs if the previous 'mvn test' step was successful
-        if: success()
-        #run: echo "Tests passed successfully! Continuous Integration is good."
-        run: echo "Group ${{ matrix.test-group }} completed successfully!"
-
-      - name: Report Failure
-        # This step only runs if the tests failed
-        if: failure()
-        #run: echo "Tests failed! Check the test results in the workflow logs."
-        run: echo "Tests failed in group ${{ matrix.test-group }}
-
-        # Upload Allure report
       - name: Upload Allure Results
-        if: always() # For failed and success to see each status of the test running
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-            name: allure-results-${{ matrix.test-group }}
-            path: target/allure-results
-            retention-days: 1
-
-        #Save screenshot if case of fail
-      - name: Upload Selenide reports
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots-${{ matrix.test-group }}
-          path: build/reports/tests/
-          retention-days: 5
+          name: allure-results-${{ matrix.test-group }}
+          path: target/allure-results
 
   generate-report:
     runs-on: ubuntu-latest
     needs: build
     if: always()
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Download All Results
+      - name: Download Results
         uses: actions/download-artifact@v4
         with:
           pattern: allure-results-*
@@ -90,19 +52,27 @@ jobs:
           merge-multiple: true
 
       - name: Install Allure CLI
-        # Manual installation to avoid Docker "exit code 1" errors
         run: |
           wget https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.tgz
           tar -zxf allure-2.32.0.tgz
           sudo ln -s $(pwd)/allure-2.32.0/bin/allure /usr/bin/allure
 
-      - name: Generate Allure Report
-        # Merging results from parallel runs into one HTML report
-        run: allure generate all-results -o allure-report-dir --clean
+      - name: Generate Report
+        run: allure generate all-results -o allure-report --clean
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload Pages Artifact
+        # This is the official way to prepare files for deployment
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-report-dirЛ
+          path: allure-report
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: generate-report
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
