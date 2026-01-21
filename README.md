@@ -9,6 +9,7 @@ This project provides automated end-to-end (E2E) and functional UI tests for the
 * **JUnit 5 (Jupiter)** - The testing engine and assertion library.
 * **Maven** - Dependency management and build automation.
 * **GitHub Actions** - Continuous Integration pipeline.
+* **Allure Report** - Reports with charts and screenshots
 
 ---
 
