@@ -57,7 +57,7 @@ jobs:
 
         #Save screenshot if case of fail
       - name: Upload Selenide reports
-        if: failed
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: screenshots-${{ matrix.test-group }}
