@@ -24,7 +24,7 @@ jobs:
           cache: maven
 
       - name: Run Tests
-        # Adding English comments to code
+        # run tests for each group
         run: mvn test -Dgroups="${{ matrix.test-group }}" -Dselenide.headless=true
         continue-on-error: true
 
